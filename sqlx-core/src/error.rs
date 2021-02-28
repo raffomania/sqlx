@@ -85,6 +85,9 @@ pub enum Error {
     /// An error occurred encoding a value for a specific parameter to
     /// be sent to the database.
     ParameterEncode { parameter: Either<usize, Box<str>>, source: EncodeError },
+
+    /// An error occurred while parsing the query for rewriting the generic placeholder syntax.
+    QueryParse(crate::placeholders::ParseError),
 }
 
 impl Error {
