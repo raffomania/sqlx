@@ -60,7 +60,7 @@ impl Parse for Input {
     fn parse(input: ParseStream) -> Result<Self> {
         let query_as = input.parse::<Path>()?;
         input.parse::<Token![,]>()?;
-        let segments = QuerySegment::parse_all(input)?;
+        let segments = QuerySegment::parse_until(input, Token![,])?;
         let arguments = match input.parse::<Option<Token![,]>>()? {
             None => vec![],
             Some(..) => Punctuated::<Expr, Token![,]>::parse_terminated(input)?
@@ -223,7 +223,7 @@ impl IsContext for NormalContext {
         } = self;
         *branch_counter += 1;
 
-        let query_call = quote!(sqlx_macros::expand_query!(
+        let query_call = quote!(sqlx::sqlx_macros::expand_query!(
             record = #query_as,
             source = #sql,
             args = [#(#args),*]
@@ -395,7 +395,7 @@ mod tests {
         assert_token_stream_eq(
             result.to_context().unwrap().generate_output(),
             quote! {
-                sqlx_macros::expand_query!(
+                sqlx::sqlx_macros::expand_query!(
                     record = OptionalRecord,
                     source = #expected_query,
                     args = [1]

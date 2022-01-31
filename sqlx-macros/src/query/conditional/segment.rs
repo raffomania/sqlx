@@ -1,6 +1,6 @@
+use proc_macro2::Span;
 use std::mem::swap;
 use std::ptr::replace;
-use proc_macro2::Span;
 use syn::{
     braced,
     parse::{Parse, ParseStream, Peek},
@@ -19,7 +19,7 @@ pub enum QuerySegment {
 
 impl QuerySegment {
     /// Parse segments up to the first occurrence of the given token, or until the input is empty.
-    fn parse_until<T: Peek>(input: ParseStream, until: T) -> syn::Result<Vec<Self>> {
+    pub fn parse_until<T: Peek>(input: ParseStream, until: T) -> syn::Result<Vec<Self>> {
         let mut segments = vec![];
         while !input.is_empty() && !input.peek(until) {
             segments.push(QuerySegment::parse(input)?);
@@ -39,7 +39,7 @@ impl QuerySegment {
 
 pub struct SqlSegment {
     pub sql: String,
-    pub args: Vec<(usize, Expr, usize)>
+    pub args: Vec<(usize, Expr, usize)>,
 }
 
 impl SqlSegment {
@@ -73,7 +73,7 @@ fn parse_inline_args(sql: &str) -> syn::Result<Vec<(usize, Expr, usize)>> {
                     curr_arg = Some((idx, String::new()));
                 }
                 curr_level += 1;
-            },
+            }
             '}' => {
                 if curr_arg.is_none() {
                     let err = Error::new(Span::call_site(), "unexpected '}' in query string");
@@ -85,16 +85,18 @@ fn parse_inline_args(sql: &str) -> syn::Result<Vec<(usize, Expr, usize)>> {
                     args.push((arg_start, arg, idx));
                 }
                 curr_level -= 1;
-            },
-            c => if let Some((_, arg)) = &mut curr_arg {
-                arg.push(c);
+            }
+            c => {
+                if let Some((_, arg)) = &mut curr_arg {
+                    arg.push(c);
+                }
             }
         }
-    };
+    }
 
     if curr_arg.is_some() {
         let err = Error::new(Span::call_site(), "expected '}', but got end of string");
-        return Err(err)
+        return Err(err);
     }
 
     Ok(args)
@@ -217,7 +219,7 @@ impl Parse for QuerySegment {
             Ok(QuerySegment::Match(input.parse()?))
         } else {
             let error = format!(
-                "expected `{}`, `{}` or `{}`",
+                "expected `{}` (SQL query segment), `{}` or `{}`",
                 SqlSegment::EXPECT,
                 IfSegment::EXPECT,
                 MatchSegment::EXPECT,
