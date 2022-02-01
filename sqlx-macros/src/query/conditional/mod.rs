@@ -201,9 +201,10 @@ struct NormalContext {
 }
 
 impl NormalContext {
-    fn add_parameter(&mut self) {
+    fn add_parameter(&mut self, expr: Expr) {
+        self.args.push(expr);
         if cfg!(feature = "postgres") {
-            write!(&mut self.sql, "${}", self.args.len() + 1).unwrap();
+            write!(&mut self.sql, "${}", self.args.len()).unwrap();
         } else {
             self.sql.push('?');
         }
@@ -252,8 +253,7 @@ impl IsContext for NormalContext {
                     self.sql.push(c);
                 }
                 if idx == *end {
-                    self.args.push(expr.clone());
-                    self.add_parameter();
+                    self.add_parameter(expr.clone());
                     arg = args.next();
                 }
             } else {
