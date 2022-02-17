@@ -129,6 +129,8 @@ pub mod decode {
 
 pub use self::decode::Decode;
 
+pub use sqlx_core::futures_core;
+
 /// Types and traits for the `query` family of functions and macros.
 pub mod query {
     pub use sqlx_core::query::{Map, Query};

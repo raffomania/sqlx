@@ -3,15 +3,9 @@ use quote::{format_ident, quote};
 use syn::Ident;
 
 pub fn generate_conditional_map(n: usize) -> TokenStream {
-    let map_fns = (1..=n)
-        .map(|i| format_ident!("F{}", i))
-        .collect::<Vec<_>>();
-    let args = (1..=n)
-        .map(|i| format_ident!("A{}", i))
-        .collect::<Vec<_>>();
-    let variants = (1..=n)
-        .map(|i| format_ident!("_{}", i))
-        .collect::<Vec<_>>();
+    let map_fns = (1..=n).map(|i| format_ident!("F{}", i)).collect::<Vec<_>>();
+    let args = (1..=n).map(|i| format_ident!("A{}", i)).collect::<Vec<_>>();
+    let variants = (1..=n).map(|i| format_ident!("_{}", i)).collect::<Vec<_>>();
     let variant_declarations = (0..n).map(|i| {
         let variant = &variants[i];
         let map_fn = &map_fns[i];
@@ -37,7 +31,7 @@ pub fn generate_conditional_map(n: usize) -> TokenStream {
             #(#map_fns: FnMut(DB::Row) -> sqlx::Result<O> + Send,)*
             #(#args: 'q + Send + sqlx::IntoArguments<'q, DB>,)*
         {
-            pub fn fetch<'e, 'c: 'e, E>(self, executor: E) -> ormx::exports::futures::stream::BoxStream<'e, sqlx::Result<O>>
+            pub fn fetch<'e, 'c: 'e, E>(self, executor: E) -> sqlx::futures_core::stream::BoxStream<'e, sqlx::Result<O>>
             where
                 'q: 'e,
                 E: 'e + sqlx::Executor<'c, Database = DB>,
