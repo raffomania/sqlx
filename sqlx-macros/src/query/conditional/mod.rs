@@ -40,19 +40,22 @@ impl Input {
             ctx.add_segment(segment);
         }
 
-        if ctx.branches() > 1 && !self.arguments.is_empty() {
-            let err = Error::new(
-                Span::call_site(),
-                "branches (`match` and `if`) can only be used with inline arguments",
-            );
-            Err(err)
-        } else {
+        if !self.arguments.is_empty() {
+            if ctx.branches() > 1 {
+                let err = Error::new(
+                    Span::call_site(),
+                    "branches (`match` and `if`) can only be used with inline arguments",
+                );
+                return Err(err);
+            }
             match &mut ctx {
                 Context::Default(ctx) => ctx.args.extend(self.arguments.iter().cloned()),
+                // For contexts other than the default context, the number of branches should be > 1
+                // If not, that's a bug.
                 _ => unreachable!(),
             }
-            Ok(ctx)
         }
+        Ok(ctx)
     }
 }
 
@@ -111,9 +114,9 @@ impl Context {
         let branches = self.branches();
 
         let result = {
-            let mut branch_counter = 1;
+            let mut branch_counter = 0;
             let output = self.to_query(branches, &mut branch_counter);
-            assert_eq!(branch_counter, branches + 1);
+            assert_eq!(branch_counter, branches);
             output
         };
 
