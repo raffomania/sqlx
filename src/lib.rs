@@ -75,6 +75,9 @@ pub extern crate sqlx_macros;
 pub use sqlx_macros::{FromRow, Type};
 
 #[cfg(feature = "macros")]
+pub use sqlx_macros::query_as;
+
+#[cfg(feature = "macros")]
 mod macros;
 
 // macro support
@@ -126,6 +129,8 @@ pub mod decode {
 }
 
 pub use self::decode::Decode;
+
+pub use sqlx_core::futures_core;
 
 /// Types and traits for the `query` family of functions and macros.
 pub mod query {

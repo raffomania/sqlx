@@ -23,6 +23,9 @@ mod args;
 mod data;
 mod input;
 mod output;
+mod conditional;
+
+pub use conditional::query_as;
 
 struct Metadata {
     #[allow(unused)]
